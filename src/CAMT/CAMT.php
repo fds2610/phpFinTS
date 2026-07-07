@@ -207,7 +207,7 @@ class CAMT
         $booked = strtoupper($status) === 'BOOK';
 
         // Parse transaction details
-        $details = $this->parseEntryDetails($entry, $ns);
+        $details = $this->parseEntryDetails($entry, $ns, $creditDebit);
 
         return [
             'booking_date' => $bookingDate,
@@ -225,7 +225,7 @@ class CAMT
      *
      * @return array Transaction details
      */
-    private function parseEntryDetails(\SimpleXMLElement $entry, string $ns): array
+    private function parseEntryDetails(\SimpleXMLElement $entry, string $ns, string $creditDebit): array
     {
         $entry->registerXPathNamespace('c', $ns);
 
@@ -265,14 +265,14 @@ class CAMT
         $relatedParties = $txDetail->xpath('.//c:RltdPties');
         if ($relatedParties !== false && !empty($relatedParties)) {
             $relatedParties[0]->registerXPathNamespace('c', $ns);
-            $this->parseRelatedParties($relatedParties[0], $ns, $details);
+            $this->parseRelatedParties($relatedParties[0], $ns, $details, $creditDebit);
         }
 
         // Get agent information (BIC codes)
         $relatedAgents = $txDetail->xpath('.//c:RltdAgts');
         if ($relatedAgents !== false && !empty($relatedAgents)) {
             $relatedAgents[0]->registerXPathNamespace('c', $ns);
-            $this->parseRelatedAgents($relatedAgents[0], $ns, $details);
+            $this->parseRelatedAgents($relatedAgents[0], $ns, $details, $creditDebit);
         }
 
         // Get references (EREF, MREF, CRED, etc.)
@@ -369,7 +369,7 @@ class CAMT
     /**
      * Parse related parties (Debtor/Creditor)
      */
-    private function parseRelatedParties(\SimpleXMLElement $relatedParties, string $ns, array &$details): void
+    private function parseRelatedParties(\SimpleXMLElement $relatedParties, string $ns, array &$details, string $creditDebit): void
     {
         // Use children() to access elements with namespace
         $children = $relatedParties->children($ns);
@@ -505,23 +505,31 @@ class CAMT
             }
         }
 
-        // Determine name priority
-        $details['name'] = !empty($ultimateCreditorName) ? $ultimateCreditorName :
-                          (!empty($ultimateDebtorName) ? $ultimateDebtorName :
-                          (!empty($creditorName) ? $creditorName :
-                          (!empty($debtorName) ? $debtorName : '')));
-
-        // Set account
-        $iban = !empty($creditorAccount) ? $creditorAccount :
-                (!empty($debtorAccount) ? $debtorAccount :
-                (!empty($creditorOtherAccount) ? $creditorOtherAccount : $debtorOtherAccount));
+        // Counterparty: debtor for incoming (CRDT), creditor for outgoing (DBIT)
+        if ($creditDebit === MT940::CD_CREDIT) {
+            $details['name'] = !empty($ultimateDebtorName) ? $ultimateDebtorName :
+                              (!empty($debtorName) ? $debtorName :
+                              (!empty($ultimateCreditorName) ? $ultimateCreditorName :
+                              (!empty($creditorName) ? $creditorName : '')));
+            $iban = !empty($debtorAccount) ? $debtorAccount :
+                    (!empty($debtorOtherAccount) ? $debtorOtherAccount :
+                    (!empty($creditorAccount) ? $creditorAccount : $creditorOtherAccount));
+        } else {
+            $details['name'] = !empty($ultimateCreditorName) ? $ultimateCreditorName :
+                              (!empty($creditorName) ? $creditorName :
+                              (!empty($ultimateDebtorName) ? $ultimateDebtorName :
+                              (!empty($debtorName) ? $debtorName : '')));
+            $iban = !empty($creditorAccount) ? $creditorAccount :
+                    (!empty($creditorOtherAccount) ? $creditorOtherAccount :
+                    (!empty($debtorAccount) ? $debtorAccount : $debtorOtherAccount));
+        }
         $details['account_number'] = $iban;
     }
 
     /**
      * Parse related agents (BIC information)
      */
-    private function parseRelatedAgents(\SimpleXMLElement $relatedAgents, string $ns, array &$details): void
+    private function parseRelatedAgents(\SimpleXMLElement $relatedAgents, string $ns, array &$details, string $creditDebit): void
     {
         // Use children() to access elements with namespace
         $children = $relatedAgents->children($ns);
@@ -529,7 +537,7 @@ class CAMT
         $debtorBIC = '';
         $creditorBIC = '';
 
-        // Debtor Agent (for outgoing transactions)
+        // Debtor Agent (counterparty bank for incoming transactions)
         if (isset($children->DbtrAgt)) {
             $dbtrAgt = $children->DbtrAgt->children($ns);
             if (isset($dbtrAgt->FinInstnId)) {
@@ -544,7 +552,7 @@ class CAMT
             }
         }
 
-        // Creditor Agent (for incoming transactions)
+        // Creditor Agent (counterparty bank for outgoing transactions)
         if (isset($children->CdtrAgt)) {
             $cdtrAgt = $children->CdtrAgt->children($ns);
             if (isset($cdtrAgt->FinInstnId)) {
@@ -561,7 +569,11 @@ class CAMT
 
         // Set BIC - only if not already set
         if (empty($details['bank_code'])) {
-            $details['bank_code'] = !empty($creditorBIC) ? $creditorBIC : $debtorBIC;
+            if ($creditDebit === MT940::CD_CREDIT) {
+                $details['bank_code'] = !empty($debtorBIC) ? $debtorBIC : $creditorBIC;
+            } else {
+                $details['bank_code'] = !empty($creditorBIC) ? $creditorBIC : $debtorBIC;
+            }
         }
     }
 
