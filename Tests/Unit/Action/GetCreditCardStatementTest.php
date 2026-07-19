@@ -179,6 +179,34 @@ class GetCreditCardStatementTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals('20260719', $request->bisDatum);
     }
 
+    /** The DIKKUS fixture announces a retention period of 90 days. */
+    public function testRejectsRangeBeyondTheRetentionPeriod()
+    {
+        $account = (new CreditCardAccount())->setAccountNumber(self::ACCOUNT)->setBlz('60050101');
+        $action = GetCreditCardStatement::create($account, new \DateTime('-200 days'), new \DateTime());
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches('/only provides credit card transactions for the last 90 days/');
+        $action->getNextRequest(self::bpd(), null);
+    }
+
+    public function testAcceptsRangeWithinTheRetentionPeriod()
+    {
+        $account = (new CreditCardAccount())->setAccountNumber(self::ACCOUNT)->setBlz('60050101');
+        $action = GetCreditCardStatement::create($account, new \DateTime('-89 days'), new \DateTime());
+
+        $this->assertCount(1, $action->getNextRequest(self::bpd(), null));
+    }
+
+    /** Without a from-date the bank decides how far back to go, so there is nothing to validate. */
+    public function testAcceptsOpenEndedRange()
+    {
+        $account = (new CreditCardAccount())->setAccountNumber(self::ACCOUNT)->setBlz('60050101');
+        $action = GetCreditCardStatement::create($account);
+
+        $this->assertCount(1, $action->getNextRequest(self::bpd(), null));
+    }
+
     public function testRejectsAnAccountWithoutNumber()
     {
         $this->expectException(\InvalidArgumentException::class);

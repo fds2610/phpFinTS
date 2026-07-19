@@ -116,6 +116,7 @@ class GetCreditCardStatement extends PaginateableAction
     {
         /** @var DIKKUS $dikkus */
         $dikkus = $bpd->requireLatestSupportedParameters('DIKKUS');
+        $this->validateDateRange($dikkus);
         switch ($dikkus->getVersion()) {
             case 2:
                 // AqBanking sends a Kontoverbindung (ktv) plus a standalone card number. The
@@ -129,6 +130,32 @@ class GetCreditCardStatement extends PaginateableAction
                 return DKKKUv2::create($kontoverbindung, $this->account->getAccountNumber(), $this->from, $this->to);
             default:
                 throw new UnsupportedException('Unsupported DKKKU version: ' . $dikkus->getVersion());
+        }
+    }
+
+    /**
+     * Banks only keep credit card transactions for a limited period, which they announce in the
+     * DIKKUS parameters. Asking for more is not necessarily rejected, but the answers become
+     * unreliable: the tested bank served the full range for one query, silently truncated another to
+     * a shorter period, and once returned an empty first page with a pagination token. Rather than
+     * let callers run into that, refuse the request and let them fetch older data window by window.
+     *
+     * @throws \InvalidArgumentException If the requested range reaches beyond the retention period.
+     */
+    private function validateDateRange(DIKKUS $dikkus): void
+    {
+        $speicherzeitraum = $dikkus->getParameter()->speicherzeitraum;
+        if ($this->from === null || $speicherzeitraum <= 0) {
+            return; // Nothing to check against.
+        }
+        $earliest = (new \DateTime("-$speicherzeitraum days"))->setTime(0, 0);
+        if ($this->from < $earliest) {
+            throw new \InvalidArgumentException(sprintf(
+                'The bank only provides credit card transactions for the last %d days, i.e. back to %s, but the requested from-date is %s.',
+                $speicherzeitraum,
+                $earliest->format('Y-m-d'),
+                $this->from->format('Y-m-d')
+            ));
         }
     }
 

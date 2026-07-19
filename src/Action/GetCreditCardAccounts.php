@@ -22,7 +22,13 @@ use Fhp\Segment\HIUPD\HIUPD;
  */
 class GetCreditCardAccounts extends BaseAction
 {
-    /** The lowest/highest FinTS account type ("Kontoart") that denotes a credit card account. */
+    /**
+     * The range of account types ("Kontoart") that denotes a credit card account, see
+     * {@link \Fhp\Segment\HIUPD\HIUPDv6::$kontoart} for the complete list of ranges.
+     *
+     * @link https://www.hbci-zka.de/dokumente/spezifikation_deutsch/fintsv3/FinTS_3.0_Formals_2017-10-06_final_version.pdf
+     * Section: E.3 "Kontoinformation"
+     */
     private const KONTOART_CREDIT_CARD_MIN = 50;
     private const KONTOART_CREDIT_CARD_MAX = 59;
 
