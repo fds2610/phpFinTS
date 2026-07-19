@@ -19,8 +19,7 @@ use Fhp\Segment\Paginateable;
  * declarative definition (SEGdef "GetTransactionsCreditCard", code DKKKU, version 2).
  * @link https://github.com/aqbanking/aqbanking/blob/master/src/libs/plugins/backends/aqhbci/ajobs/jobgettransactions.xml
  *
- * TODO(BW-Bank): Verify the trailing Aufsetzpunkt field, which AqBanking does not list explicitly
- * (it handles pagination generically for jobs marked attachable="1").
+ * CAVEAT: The position of {@link $aufsetzpunkt} is an educated guess, see the note on that field.
  */
 class DKKKUv2 extends BaseSegment implements Paginateable
 {
@@ -36,7 +35,21 @@ class DKKKUv2 extends BaseSegment implements Paginateable
     public ?string $bisDatum = null;
     /** JJJJMMTT gemäß ISO 8601 */
     public ?string $vonDatum = null;
-    /** Max length: 35 */
+    /**
+     * Max length: 35.
+     *
+     * UNVERIFIED: AqBanking marks the DKKKU job as attachable="1" but, unlike for HKKAZ, its segment
+     * definition contains no element to put the Aufsetzpunkt in. So its position here follows the
+     * general FinTS convention of a trailing, optional data element (as in
+     * {@link \Fhp\Segment\KAZ\HKKAZv7::$aufsetzpunkt}) rather than a documented definition.
+     *
+     * It could not be verified against a real bank either, because the tested account never produced
+     * a paginated response and DKKKU offers no way to request a smaller page. If a bank does paginate
+     * and rejects the follow-up request, this field is the first thing to check.
+     *
+     * Note that omitting the field entirely would be worse: the action would then re-send the
+     * identical request for every page and never make progress.
+     */
     public ?string $aufsetzpunkt = null;
 
     public static function create(KtvV3 $kontoverbindung, string $kontonummer, ?\DateTime $vonDatum, ?\DateTime $bisDatum, ?string $aufsetzpunkt = null): DKKKUv2
