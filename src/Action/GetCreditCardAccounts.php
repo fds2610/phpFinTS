@@ -49,7 +49,7 @@ class GetCreditCardAccounts extends BaseAction
             throw new \InvalidArgumentException('Cannot determine credit card accounts without UPD');
         }
 
-        foreach ($upd->hiupd as $hiupd) {
+        foreach ($upd->hiupd ?? [] as $hiupd) {
             if (!self::isCreditCardAccount($hiupd)) {
                 continue;
             }
