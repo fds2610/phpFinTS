@@ -12,9 +12,17 @@ namespace Fhp\Model;
  */
 class CreditCardAccount
 {
-    /** The credit card number, taken from the account's Kontonummer. */
-    protected ?string $cardNumber = null;
-    /** Distinguishes several cards belonging to the same account, if the bank uses it. */
+    /**
+     * The account number (Kontonummer) of the credit card account.
+     *
+     * Note that this is NOT necessarily a valid card number, even though it usually looks like one:
+     * banks commonly derive it from one of the cards and zero out the trailing digits. A single
+     * account can also cover several physical cards of different schemes (e.g. one Visa and one
+     * Mastercard). The individual card a transaction belongs to is reported per transaction, see
+     * {@link \Fhp\Model\CreditCardStatement\CreditCardTransaction::getAccountNumber()}.
+     */
+    protected ?string $accountNumber = null;
+    /** Distinguishes several sub-accounts belonging to the same account, if the bank uses it. */
     protected ?string $subAccount = null;
     protected ?string $blz = null;
     /** The account holder name. */
@@ -25,14 +33,14 @@ class CreditCardAccount
     /** The FinTS account type; 50-59 denotes a credit card account. Null before HIUPD v6. */
     protected ?int $accountType = null;
 
-    public function getCardNumber(): ?string
+    public function getAccountNumber(): ?string
     {
-        return $this->cardNumber;
+        return $this->accountNumber;
     }
 
-    public function setCardNumber(?string $cardNumber): static
+    public function setAccountNumber(?string $accountNumber): static
     {
-        $this->cardNumber = $cardNumber;
+        $this->accountNumber = $accountNumber;
         return $this;
     }
 

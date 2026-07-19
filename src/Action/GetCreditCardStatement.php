@@ -50,8 +50,8 @@ class GetCreditCardStatement extends PaginateableAction
      */
     public static function create(CreditCardAccount $account, ?\DateTime $from = null, ?\DateTime $to = null): GetCreditCardStatement
     {
-        if ($account->getCardNumber() === null) {
-            throw new \InvalidArgumentException('The credit card account must have a card number');
+        if ($account->getAccountNumber() === null) {
+            throw new \InvalidArgumentException('The credit card account must have an account number');
         }
         if ($from !== null && $to !== null && $from > $to) {
             throw new \InvalidArgumentException('From-date must be before to-date');
@@ -119,11 +119,11 @@ class GetCreditCardStatement extends PaginateableAction
                 // Kontoverbindung is taken verbatim from the UPD (via GetCreditCardAccounts), so it
                 // matches exactly what the bank told us about this account.
                 $kontoverbindung = KtvV3::create(
-                    $this->account->getCardNumber(),
+                    $this->account->getAccountNumber(),
                     $this->account->getSubAccount(),
                     Kik::create($this->account->getBlz() ?? $bpd->getBankCode())
                 );
-                return DKKKUv2::create($kontoverbindung, $this->account->getCardNumber(), $this->from, $this->to);
+                return DKKKUv2::create($kontoverbindung, $this->account->getAccountNumber(), $this->from, $this->to);
             default:
                 throw new UnsupportedException('Unsupported DKKKU version: ' . $dikkus->getVersion());
         }

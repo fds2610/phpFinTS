@@ -58,7 +58,7 @@ class GetCreditCardAccounts extends BaseAction
                 continue;
             }
             $this->accounts[] = (new CreditCardAccount())
-                ->setCardNumber($ktv->kontonummer)
+                ->setAccountNumber($ktv->kontonummer)
                 ->setSubAccount($ktv->unterkontomerkmal)
                 ->setBlz($ktv->kik->kreditinstitutscode ?? $bpd->getBankCode())
                 ->setName(self::joinName($hiupd))

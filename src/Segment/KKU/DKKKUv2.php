@@ -19,15 +19,19 @@ use Fhp\Segment\Paginateable;
  * declarative definition (SEGdef "GetTransactionsCreditCard", code DKKKU, version 2).
  * @link https://github.com/aqbanking/aqbanking/blob/master/src/libs/plugins/backends/aqhbci/ajobs/jobgettransactions.xml
  *
- * TODO(BW-Bank): Verify the exact wire layout against a real request. Open questions: (1) whether the
- * account is identified by a Kontoverbindung (ktv) as modelled here, and how it relates to the
- * standalone card number; (2) whether the trailing Aufsetzpunkt field exists in this position.
+ * TODO(BW-Bank): Verify the trailing Aufsetzpunkt field, which AqBanking does not list explicitly
+ * (it handles pagination generically for jobs marked attachable="1").
  */
 class DKKKUv2 extends BaseSegment implements Paginateable
 {
     public KtvV3 $kontoverbindung;
-    /** Max length: 30. The credit card number. */
-    public string $kartennummer;
+    /**
+     * Max length: 30. The account number, repeated outside the Kontoverbindung.
+     *
+     * Note that this is not necessarily a valid card number, see
+     * {@link \Fhp\Model\CreditCardAccount::$accountNumber}.
+     */
+    public string $kontonummer;
     /** JJJJMMTT gemäß ISO 8601. NB: AqBanking lists toDate before fromDate. */
     public ?string $bisDatum = null;
     /** JJJJMMTT gemäß ISO 8601 */
@@ -35,11 +39,11 @@ class DKKKUv2 extends BaseSegment implements Paginateable
     /** Max length: 35 */
     public ?string $aufsetzpunkt = null;
 
-    public static function create(KtvV3 $kontoverbindung, string $kartennummer, ?\DateTime $vonDatum, ?\DateTime $bisDatum, ?string $aufsetzpunkt = null): DKKKUv2
+    public static function create(KtvV3 $kontoverbindung, string $kontonummer, ?\DateTime $vonDatum, ?\DateTime $bisDatum, ?string $aufsetzpunkt = null): DKKKUv2
     {
         $result = DKKKUv2::createEmpty();
         $result->kontoverbindung = $kontoverbindung;
-        $result->kartennummer = $kartennummer;
+        $result->kontonummer = $kontonummer;
         $result->vonDatum = $vonDatum?->format('Ymd');
         $result->bisDatum = $bisDatum?->format('Ymd');
         $result->aufsetzpunkt = $aufsetzpunkt;
