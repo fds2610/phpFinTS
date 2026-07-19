@@ -39,4 +39,30 @@ class HIUPDv4 extends BaseSegment implements HIUPD
     {
         return $this->erlaubteGeschaeftsvorfaelle ?? [];
     }
+
+    public function getKontoverbindung(): ?\Fhp\Segment\Common\KtvV3
+    {
+        return $this->kontoverbindung;
+    }
+
+    /** This segment version does not carry the account type yet. */
+    public function getKontoart(): ?int
+    {
+        return null;
+    }
+
+    public function getName1(): ?string
+    {
+        return $this->name1;
+    }
+
+    public function getKontoproduktbezeichnung(): ?string
+    {
+        return $this->kontoproduktbezeichnung;
+    }
+
+    public function getKontowaehrung(): ?string
+    {
+        return $this->kontowaehrung;
+    }
 }

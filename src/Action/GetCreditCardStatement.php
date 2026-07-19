@@ -2,6 +2,7 @@
 
 namespace Fhp\Action;
 
+use Fhp\Model\CreditCardAccount;
 use Fhp\Model\CreditCardStatement\CreditCardStatement;
 use Fhp\PaginateableAction;
 use Fhp\Protocol\BPD;
@@ -21,13 +22,14 @@ use Fhp\UnsupportedException;
  * LBBW). Credit card accounts have no IBAN and can therefore not be queried through
  * {@link GetStatementOfAccount} (HKKAZ) or {@link GetStatementOfAccountXML} (HKCAZ).
  *
- * The card number is user input; it does NOT come from {@link GetSEPAAccounts}.
+ * The account to query is obtained from {@link GetCreditCardAccounts}, which reads it from the UPD.
+ * Credit card accounts are NOT part of {@link GetSEPAAccounts}, because they have no IBAN.
  */
 class GetCreditCardStatement extends PaginateableAction
 {
     // Request (if you add a field here, update __serialize() and __unserialize() as well).
-    /** @var string */
-    private $cardNumber;
+    /** @var CreditCardAccount */
+    private $account;
     /** @var \DateTime|null */
     private $from;
     /** @var \DateTime|null */
@@ -40,19 +42,23 @@ class GetCreditCardStatement extends PaginateableAction
     private $statement;
 
     /**
-     * @param string $cardNumber The credit card number to get the transactions for (user input).
+     * @param CreditCardAccount $account The credit card account to get the transactions for, as
+     *     obtained from {@link GetCreditCardAccounts}.
      * @param \DateTime|null $from If set, only transactions after this date (inclusive) are returned.
      * @param \DateTime|null $to If set, only transactions before this date (inclusive) are returned.
      * @return GetCreditCardStatement A new action instance.
      */
-    public static function create(string $cardNumber, ?\DateTime $from = null, ?\DateTime $to = null): GetCreditCardStatement
+    public static function create(CreditCardAccount $account, ?\DateTime $from = null, ?\DateTime $to = null): GetCreditCardStatement
     {
+        if ($account->getCardNumber() === null) {
+            throw new \InvalidArgumentException('The credit card account must have a card number');
+        }
         if ($from !== null && $to !== null && $from > $to) {
             throw new \InvalidArgumentException('From-date must be before to-date');
         }
 
         $result = new GetCreditCardStatement();
-        $result->cardNumber = $cardNumber;
+        $result->account = $account;
         $result->from = $from;
         $result->to = $to;
         return $result;
@@ -70,7 +76,7 @@ class GetCreditCardStatement extends PaginateableAction
     {
         return [
             parent::__serialize(),
-            $this->cardNumber, $this->from, $this->to,
+            $this->account, $this->from, $this->to,
         ];
     }
 
@@ -89,7 +95,7 @@ class GetCreditCardStatement extends PaginateableAction
     {
         list(
             $parentSerialized,
-            $this->cardNumber, $this->from, $this->to,
+            $this->account, $this->from, $this->to,
         ) = $serialized;
 
         is_array($parentSerialized) ?
@@ -109,11 +115,15 @@ class GetCreditCardStatement extends PaginateableAction
         $dikkus = $bpd->requireLatestSupportedParameters('DIKKUS');
         switch ($dikkus->getVersion()) {
             case 2:
-                // TODO(BW-Bank): Verify the account identification. AqBanking sends a Kontoverbindung
-                // (ktv) plus a standalone card number. We build the ktv from the bank code and the
-                // card number; confirm against a real request that this is what the bank expects.
-                $kontoverbindung = KtvV3::create($this->cardNumber, null, Kik::create($bpd->getBankCode()));
-                return DKKKUv2::create($kontoverbindung, $this->cardNumber, $this->from, $this->to);
+                // AqBanking sends a Kontoverbindung (ktv) plus a standalone card number. The
+                // Kontoverbindung is taken verbatim from the UPD (via GetCreditCardAccounts), so it
+                // matches exactly what the bank told us about this account.
+                $kontoverbindung = KtvV3::create(
+                    $this->account->getCardNumber(),
+                    $this->account->getSubAccount(),
+                    Kik::create($this->account->getBlz() ?? $bpd->getBankCode())
+                );
+                return DKKKUv2::create($kontoverbindung, $this->account->getCardNumber(), $this->from, $this->to);
             default:
                 throw new UnsupportedException('Unsupported DKKKU version: ' . $dikkus->getVersion());
         }
