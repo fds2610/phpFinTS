@@ -19,8 +19,7 @@ use Fhp\Segment\Paginateable;
  * declarative definition (SEGdef "GetTransactionsCreditCard", code DKKKU, version 2).
  * @link https://github.com/aqbanking/aqbanking/blob/master/src/libs/plugins/backends/aqhbci/ajobs/jobgettransactions.xml
  *
- * CAVEAT: The position of the pagination token {@link $aufsetzpunkt} is an educated guess, see the
- * note on that field.
+ * NOTE: The last two fields are missing from AqBanking's definition, see the notes on them.
  */
 class DKKKUv2 extends BaseSegment implements Paginateable
 {
@@ -37,19 +36,25 @@ class DKKKUv2 extends BaseSegment implements Paginateable
     /** JJJJMMTT gemäß ISO 8601 */
     public ?string $vonDatum = null;
     /**
+     * Only allowed if {@link ParameterKreditkartenumsaetze::$eingabeAnzahlEintraegeErlaubt} says so.
+     *
+     * AqBanking's definition does not list this field, but the DIKKUS parameters have a flag stating
+     * whether it may be used, so the field has to exist. Confirmed by the bank rejecting a request
+     * that put the pagination token in this position.
+     */
+    public ?int $maximaleAnzahlEintraege = null;
+    /**
      * Max length: 35. The pagination token, called "Aufsetzpunkt" in the specification.
      *
-     * UNVERIFIED: AqBanking marks the DKKKU job as attachable="1" but, unlike for HKKAZ, its segment
-     * definition contains no element to put the token in. So its position here follows the general
-     * FinTS convention of a trailing, optional data element (as in
-     * {@link \Fhp\Segment\KAZ\HKKAZv7::$aufsetzpunkt}) rather than a documented definition.
+     * Like {@link $maximaleAnzahlEintraege} this is missing from AqBanking's definition, so the
+     * position mirrors HKKAZ, which ends in the same pair of fields.
      *
-     * It could not be verified against a real bank either, because the tested account never produced
-     * a paginated response and DKKKU offers no way to request a smaller page. If a bank does paginate
-     * and rejects the follow-up request, this field is the first thing to check.
-     *
-     * Note that omitting the field entirely would be worse: the action would then re-send the
-     * identical request for every page and never make progress.
+     * PARTIALLY VERIFIED: the tested bank does paginate (it answered a one year query with
+     * "3040 Es liegen weitere Informationen vor" and a token of the form
+     * "<card number>,<date>,<index>"), and it rejected a follow-up that omitted
+     * {@link $maximaleAnzahlEintraege} with "9110 Ungueltige Auftragsnachricht: Unbekannter Aufbau".
+     * That the layout below is accepted could not be confirmed yet, because the bank did not
+     * paginate again on any later attempt with the same query.
      */
     public ?string $aufsetzpunkt = null;
 
