@@ -179,30 +179,69 @@ class GetCreditCardStatementTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals('20260719', $request->bisDatum);
     }
 
-    /** The DIKKUS fixture announces a retention period of 90 days. */
-    public function testRejectsRangeBeyondTheRetentionPeriod()
+    private static function accountOnly(): CreditCardAccount
     {
-        $account = (new CreditCardAccount())->setAccountNumber(self::ACCOUNT)->setBlz('60050101');
-        $action = GetCreditCardStatement::create($account, new \DateTime('-200 days'), new \DateTime());
+        return (new CreditCardAccount())->setAccountNumber(self::ACCOUNT)->setBlz('60050101');
+    }
+
+    /** The DIKKUS fixture announces a period of 90 days. */
+    public function testRejectsRangeSpanningMoreThanTheAnnouncedPeriod()
+    {
+        $action = GetCreditCardStatement::create(
+            self::accountOnly(),
+            new \DateTime('-200 days'),
+            new \DateTime()
+        );
 
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessageMatches('/only provides credit card transactions for the last 90 days/');
+        $this->expectExceptionMessageMatches('/spanning more than 90 days/');
         $action->getNextRequest(self::bpd(), null);
     }
 
-    public function testAcceptsRangeWithinTheRetentionPeriod()
+    public function testAcceptsRangeWithinTheAnnouncedPeriod()
     {
-        $account = (new CreditCardAccount())->setAccountNumber(self::ACCOUNT)->setBlz('60050101');
-        $action = GetCreditCardStatement::create($account, new \DateTime('-89 days'), new \DateTime());
+        $action = GetCreditCardStatement::create(
+            self::accountOnly(),
+            new \DateTime('-89 days'),
+            new \DateTime()
+        );
 
         $this->assertCount(1, $action->getNextRequest(self::bpd(), null));
     }
 
-    /** Without a from-date the bank decides how far back to go, so there is nothing to validate. */
-    public function testAcceptsOpenEndedRange()
+    /**
+     * Older transactions have to be fetched window by window, so a short range far in the past must
+     * be accepted even though it starts beyond the announced period.
+     */
+    public function testAcceptsShortRangeFarInThePast()
     {
-        $account = (new CreditCardAccount())->setAccountNumber(self::ACCOUNT)->setBlz('60050101');
-        $action = GetCreditCardStatement::create($account);
+        $action = GetCreditCardStatement::create(
+            self::accountOnly(),
+            new \DateTime('-180 days'),
+            new \DateTime('-90 days')
+        );
+
+        $requestSegments = $action->getNextRequest(self::bpd(), null);
+        $this->assertCount(1, $requestSegments);
+        /** @var DKKKUv2 $request */
+        $request = $requestSegments[0];
+        $this->assertEquals((new \DateTime('-180 days'))->format('Ymd'), $request->vonDatum);
+        $this->assertEquals((new \DateTime('-90 days'))->format('Ymd'), $request->bisDatum);
+    }
+
+    /** Without a to-date the range extends to today, which still must not be too wide. */
+    public function testRejectsOpenEndedRangeStartingTooFarBack()
+    {
+        $action = GetCreditCardStatement::create(self::accountOnly(), new \DateTime('-200 days'));
+
+        $this->expectException(\InvalidArgumentException::class);
+        $action->getNextRequest(self::bpd(), null);
+    }
+
+    /** Without a from-date the bank decides how much to return, so there is nothing to validate. */
+    public function testAcceptsRangeWithoutFromDate()
+    {
+        $action = GetCreditCardStatement::create(self::accountOnly());
 
         $this->assertCount(1, $action->getNextRequest(self::bpd(), null));
     }

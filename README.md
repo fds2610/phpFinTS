@@ -77,11 +77,12 @@ that:
  * A single account can cover several physical cards, possibly of different schemes. The account
    number looks like a card number but generally is not a valid one. Which card a transaction belongs
    to is usually indicated in its purpose.
- * Banks typically retain only a limited period of credit card transactions; the exact number of days
-   is reported as the "Speicherzeitraum" in the `DIKKUS` parameters. `GetCreditCardStatement` rejects
-   ranges that reach back further, because banks answer them inconsistently rather than refusing them
-   — the tested one served the full range for one query and silently truncated another. If you need
-   more history, fetch it window by window.
+ * A single request may not span more than the period the bank reports as "Speicherzeitraum" in the
+   `DIKKUS` parameters, and `GetCreditCardStatement` rejects wider ranges. Banks do not refuse them
+   themselves, they just answer inconsistently — the tested one served a range twice that period in
+   full on one attempt and returned an empty page on the next, and silently truncated a much wider
+   one. Note that the period is not necessarily how far back the data goes: the tested bank happily
+   served much older transactions when asked for them in windows of the permitted width.
  * Transactions in a foreign currency additionally report the original amount, its currency and the
    exchange rate that was applied.
 

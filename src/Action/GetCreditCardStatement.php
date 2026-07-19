@@ -134,27 +134,36 @@ class GetCreditCardStatement extends PaginateableAction
     }
 
     /**
-     * Banks only keep credit card transactions for a limited period, which they announce in the
-     * DIKKUS parameters. Asking for more is not necessarily rejected, but the answers become
-     * unreliable: the tested bank served the full range for one query, silently truncated another to
-     * a shorter period, and once returned an empty first page with a pagination token. Rather than
-     * let callers run into that, refuse the request and let them fetch older data window by window.
+     * Limits how much a single request may ask for, using the period the bank announces in the
+     * DIKKUS parameters.
      *
-     * @throws \InvalidArgumentException If the requested range reaches beyond the retention period.
+     * That period is specified as the time for which the bank keeps transactions, but the tested
+     * bank served data well beyond it, so it is not a hard boundary there. What did break was asking
+     * for too much at once: a range twice the announced period was served in full on one attempt and
+     * answered with an empty page plus a pagination token on the next, and a range eight times as
+     * long came back silently truncated. Ranges within the announced period were always answered
+     * consistently. The limit is therefore applied to the span of the request rather than to how far
+     * back it reaches, which also leaves callers the option of walking through older data window by
+     * window.
+     *
+     * @throws \InvalidArgumentException If the requested range spans more than the announced period.
      */
     private function validateDateRange(DIKKUS $dikkus): void
     {
         $speicherzeitraum = $dikkus->getParameter()->speicherzeitraum;
         if ($this->from === null || $speicherzeitraum <= 0) {
-            return; // Nothing to check against.
+            return; // Without a from-date the bank decides how much to return.
         }
-        $earliest = (new \DateTime("-$speicherzeitraum days"))->setTime(0, 0);
-        if ($this->from < $earliest) {
+        $to = $this->to ?? new \DateTime();
+        $requestedDays = (int) $this->from->diff($to)->days;
+        if ($requestedDays > $speicherzeitraum) {
             throw new \InvalidArgumentException(sprintf(
-                'The bank only provides credit card transactions for the last %d days, i.e. back to %s, but the requested from-date is %s.',
+                'The bank answers requests spanning more than %d days inconsistently, but the requested range spans %d days (%s to %s). Fetch older transactions in separate requests of at most %d days each.',
                 $speicherzeitraum,
-                $earliest->format('Y-m-d'),
-                $this->from->format('Y-m-d')
+                $requestedDays,
+                $this->from->format('Y-m-d'),
+                $to->format('Y-m-d'),
+                $speicherzeitraum
             ));
         }
     }
