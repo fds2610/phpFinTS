@@ -80,6 +80,11 @@ class HIUPDv6 extends BaseSegment implements HIUPD
         return $this->name1;
     }
 
+    public function getName2(): ?string
+    {
+        return $this->name2;
+    }
+
     public function getKontoproduktbezeichnung(): ?string
     {
         return $this->kontoproduktbezeichnung;

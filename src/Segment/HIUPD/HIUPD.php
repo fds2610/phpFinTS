@@ -34,8 +34,11 @@ interface HIUPD
      */
     public function getKontoart(): ?int;
 
-    /** @return string|null The account holder name. */
+    /** @return string|null The account holder name (usually the surname). */
     public function getName1(): ?string;
+
+    /** @return string|null A second account holder name part (usually the given name). */
+    public function getName2(): ?string;
 
     /** @return string|null The bank's product name for this account. */
     public function getKontoproduktbezeichnung(): ?string;
