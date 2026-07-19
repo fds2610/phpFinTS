@@ -19,8 +19,8 @@ use Fhp\Segment\KKU\DKKKUv2;
  * NOTE: The pagination is exercised here with a simulated response, because it could not be
  * triggered against a real bank: the tested account's transactions all fit into a single response,
  * and DKKKU offers no way to ask for a smaller page (unlike HKKAZ it has no "maximaleAnzahlEintraege"
- * field). What this test therefore cannot prove is that the Aufsetzpunkt sits at the wire position
- * assumed by {@link DKKKUv2::$aufsetzpunkt} — see the note there.
+ * field). What this test therefore cannot prove is that the pagination token sits at the wire
+ * position assumed by {@link DKKKUv2::$aufsetzpunkt} — see the note there.
  */
 class GetCreditCardStatementTest extends \PHPUnit\Framework\TestCase
 {
@@ -127,7 +127,7 @@ class GetCreditCardStatementTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($action->hasMorePages());
         $this->assertFalse($action->isDone());
 
-        // The follow-up request must carry the Aufsetzpunkt, everything else unchanged.
+        // The follow-up request must carry the pagination token, everything else unchanged.
         $requestSegments = self::nextRequest($action, $bpd);
         /** @var DKKKUv2 $request */
         $request = $requestSegments[0];
