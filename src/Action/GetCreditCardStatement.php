@@ -24,6 +24,9 @@ use Fhp\UnsupportedException;
  *
  * The account to query is obtained from {@link GetCreditCardAccounts}, which reads it from the UPD.
  * Credit card accounts are NOT part of {@link GetSEPAAccounts}, because they have no IBAN.
+ *
+ * Note that DKKKU has no publicly available specification, see {@link DKKKUv2} for details and for
+ * the reference this implementation is based on instead.
  */
 class GetCreditCardStatement extends PaginateableAction
 {

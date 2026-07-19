@@ -16,6 +16,9 @@ use Fhp\Segment\HIUPD\HIUPD;
  * They are however described by the HIUPD segments in the UPD, which the bank sends during dialog
  * initialization. This action therefore needs no request to the server at all; it just interprets
  * data that is already available after login.
+ *
+ * @link https://www.hbci-zka.de/dokumente/spezifikation_deutsch/fintsv3/FinTS_3.0_Formals_2017-10-06_final_version.pdf
+ * Section: E.3 "Kontoinformation" (the HIUPD segment this reads)
  */
 class GetCreditCardAccounts extends BaseAction
 {

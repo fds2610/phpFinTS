@@ -15,8 +15,14 @@ use Fhp\Segment\Paginateable;
  * accounts have no IBAN and can therefore not be queried through HKKAZ (see
  * {@link \Fhp\Segment\KAZ\HKKAZv7}) or HKCAZ.
  *
- * There is no official specification for this segment. The field layout is derived from AqBanking's
- * declarative definition (SEGdef "GetTransactionsCreditCard", code DKKKU, version 2).
+ * There is no publicly available specification for this segment: DKKKU is an association-specific
+ * ("verbandsspezifisch") business transaction of the Sparkassen-Finanzgruppe, and its specification
+ * is only handed out by SIZ under a non-disclosure agreement. Unlike for the segments defined in the
+ * FinTS specification, there is therefore no document to link to here.
+ *
+ * The field layout is instead derived from AqBanking's declarative definition (SEGdef
+ * "GetTransactionsCreditCard", code DKKKU, version 2), the only public implementation-level
+ * description we could find, and then corrected against real responses where it was wrong.
  * @link https://github.com/aqbanking/aqbanking/blob/master/src/libs/plugins/backends/aqhbci/ajobs/jobgettransactions.xml
  *
  * NOTE: The last two fields are missing from AqBanking's definition, see the notes on them.
