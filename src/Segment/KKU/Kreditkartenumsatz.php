@@ -11,43 +11,56 @@ use Fhp\Segment\Common\Btg;
  *
  * One credit card transaction record, as contained in {@link DIKKUv2::$umsaetze}.
  *
- * There is no official specification. The field layout is derived from AqBanking's declarative
- * definition (GROUPdef "creditcardtransaction", version 1).
+ * There is no official specification. The layout was derived from AqBanking's declarative definition
+ * (GROUPdef "creditcardtransaction") and then corrected against real BW-Bank/LBBW responses.
  * @link https://github.com/aqbanking/aqbanking/blob/master/src/libs/plugins/backends/aqhbci/ajobs/jobgettransactions.xml
  *
- * NOTE: The nine "Verwendungszweck" fields are modelled as discrete elements (rather than a repeated
- * array) because they sit in the middle of the record, followed by further fixed fields.
+ * Deviations from AqBanking's definition, all confirmed against real data:
+ *  - AqBanking describes $ursprungsbetrag ("value2") as a duplicate of $betrag that is zero for
+ *    weekly statements. In fact it carries the amount in the *original* currency, while $betrag
+ *    carries the amount billed in the account currency. For domestic transactions both are equal,
+ *    which is presumably why they looked like duplicates.
+ *  - AqBanking describes $umrechnungskurs ("unknown3") as always "1,". It is the exchange rate, and
+ *    is indeed 1 whenever no conversion takes place.
+ *  - AqBanking's definition ends after the reference. Real responses append the merchant category
+ *    code (see $branchenschluessel). It is absent for non-merchant bookings such as the monthly
+ *    settlement debit, hence optional.
  *
- * TODO(BW-Bank): Verify against a real record. Open questions: the allowed values of the
- * Soll/Haben-Kennzeichen ('S'/'H' vs 'D'/'C'), whether the amount groups carry a currency, and the
- * exact number of Verwendungszweck fields actually sent.
+ * The nine Verwendungszweck fields are modelled as discrete elements rather than a repeated array,
+ * because they sit in the middle of the record and are followed by further fixed fields.
  */
 class Kreditkartenumsatz extends BaseDeg
 {
-    /** Max length: 30 */
+    /**
+     * Max length: 30. Depending on the bank's vintage this is either the credit card account number
+     * or the number of the individual card that was used.
+     */
     public string $kontonummer;
-    /** JJJJMMTT gemäß ISO 8601 (AqBanking: "valutaDate") */
+    /** JJJJMMTT gemäß ISO 8601. The date the transaction was made (AqBanking: "valutaDate"). */
     public ?string $belegdatum = null;
-    /** JJJJMMTT gemäß ISO 8601 (AqBanking: "date") */
+    /** JJJJMMTT gemäß ISO 8601. The date it was booked (AqBanking: "date"). */
     public ?string $buchungsdatum = null;
     /** Always empty (AqBanking: "unknown1", maxsize 0). */
     public ?string $unbekannt1 = null;
     /**
-     * Appears identical to {@link $betrag}, but is zero for weekly statements. Do NOT use it for the
-     * amount; the correct value is always carried by {@link $betrag}. (Quirk documented in AqBanking.)
+     * The amount in the currency the merchant charged. Equal to {@link $betrag} for domestic
+     * transactions. For foreign currency transactions this is the original amount, e.g. 34.99 USD.
      */
-    public Btg $betrag2;
-    /** Soll/Haben-Kennzeichen belonging to {@link $betrag2}. See the note on {@link $betrag2}. */
-    public string $sollHabenKennzeichen2;
-    /** Semantics unknown (AqBanking: "unknown3", always "1,"). Max length: 30 */
-    public ?string $unbekannt3 = null;
-    /** The transaction amount (AqBanking: "value"). */
+    public Btg $ursprungsbetrag;
+    /** Soll/Haben-Kennzeichen for {@link $ursprungsbetrag} ('D' = Soll/debit, 'C' = Haben/credit). */
+    public string $ursprungsSollHabenKennzeichen;
+    /**
+     * The exchange rate applied, i.e. $ursprungsbetrag * $umrechnungskurs == $betrag. Exactly 1 when
+     * no conversion took place.
+     */
+    public ?float $umrechnungskurs = null;
+    /** The amount billed to the account, in the account's currency. */
     public Btg $betrag;
-    /** Soll/Haben-Kennzeichen belonging to {@link $betrag} ('S' = Soll/debit, 'H' = Haben/credit). */
+    /** Soll/Haben-Kennzeichen for {@link $betrag} ('D' = Soll/debit, 'C' = Haben/credit). */
     public string $sollHabenKennzeichen;
-    /** Max length: 50 */
+    /** Max length: 50. Usually the merchant name. */
     public ?string $verwendungszweck1 = null;
-    /** Max length: 50 */
+    /** Max length: 50. Usually the merchant location followed by the masked card number that was used. */
     public ?string $verwendungszweck2 = null;
     /** Max length: 50 */
     public ?string $verwendungszweck3 = null;
@@ -63,10 +76,16 @@ class Kreditkartenumsatz extends BaseDeg
     public ?string $verwendungszweck8 = null;
     /** Max length: 50 */
     public ?string $verwendungszweck9 = null;
-    /** Semantics unknown (AqBanking: "yesno1", always "Y"). Max length: 1 */
+    /** Semantics unknown (AqBanking: "yesno1"). Observed values: "J". Max length: 1 */
     public ?string $unbekannt4 = null;
-    /** Max length: 30. 16-digit reference number ("Referenz" in the bank's web UI). */
+    /** Max length: 30. The reference number ("Referenz" in the bank's web UI). */
     public ?string $referenz = null;
+    /**
+     * The ISO 18245 merchant category code (MCC) of the merchant, e.g. 5411 for grocery stores.
+     * Absent for bookings that have no merchant, such as the monthly settlement debit.
+     * Max length: 4
+     */
+    public ?string $branchenschluessel = null;
 
     /** @return string[] The non-empty Verwendungszweck lines, in order. */
     public function getVerwendungszweckLines(): array
