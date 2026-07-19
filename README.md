@@ -78,7 +78,10 @@ that:
    number looks like a card number but generally is not a valid one. Which card a transaction belongs
    to is usually indicated in its purpose.
  * Banks typically retain only a limited period of credit card transactions; the exact number of days
-   is reported in the `DIKKUS` parameters.
+   is reported as the "Speicherzeitraum" in the `DIKKUS` parameters. Asking for a longer range is not
+   rejected, but the tested bank answered such queries inconsistently — sometimes with the full
+   range, sometimes silently truncated. If you need more history, request it in windows no larger
+   than the advertised one.
  * Transactions in a foreign currency additionally report the original amount, its currency and the
    exchange rate that was applied.
 
