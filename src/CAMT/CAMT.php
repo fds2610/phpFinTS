@@ -337,7 +337,10 @@ class CAMT
         // Unstructured remittance info - this is the main "Verwendungszweck"
         $unstructured = $remittanceInfo->xpath('.//c:Ustrd');
         if ($unstructured !== false && !empty($unstructured)) {
-            $ustrd = (string) $unstructured[0];
+            $ustrd = '';
+            foreach ($unstructured as $tag) {
+                $ustrd .= (string) $tag;
+            }
 
             // Parse structured SEPA fields from unstructured text
             $structuredFields = $this->extractStructuredFieldsFromText($ustrd);
