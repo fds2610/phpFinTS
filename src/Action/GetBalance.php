@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Fhp\Action;
 
 use Fhp\Model\SEPAAccount;
@@ -25,14 +27,12 @@ use Fhp\UnsupportedException;
 class GetBalance extends PaginateableAction
 {
     // Request (if you add a field here, update __serialize() and __unserialize() as well).
-    /** @var SEPAAccount */
-    private $account;
-    /** @var bool */
-    private $allAccounts;
+    private SEPAAccount $account;
+    private bool $allAccounts;
 
     // Response
     /** @var HISAL[] */
-    private $response = [];
+    private array $response = [];
 
     /**
      * @param SEPAAccount $account The account to get the balance for. This can be constructed based on information

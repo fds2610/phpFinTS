@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Fhp\Action;
 
 use Fhp\Model\SEPAAccount;
@@ -25,18 +27,14 @@ use Fhp\UnsupportedException;
 class GetDepotAufstellung extends PaginateableAction
 {
     // Request (if you add a field here, update __serialize() and __unserialize() as well).
-    /** @var SEPAAccount */
-    private $account;
+    private SEPAAccount $account;
 
     // Response
-    /** @var string */
-    private $rawMT535 = '';
+    private string $rawMT535 = '';
 
-    /** @var StatementOfHoldings */
-    private $statement;
+    private ?StatementOfHoldings $statement = null;
 
-    /** @var float */
-    private $depotWert;
+    private float $depotWert = 0.0;
 
     /**
      * @param SEPAAccount $account The account to get the statement for. This can be constructed based on information

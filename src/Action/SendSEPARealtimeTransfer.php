@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Fhp\Action;
 
 use Fhp\BaseAction;
@@ -25,12 +27,9 @@ use Fhp\UnsupportedException;
 class SendSEPARealtimeTransfer extends BaseAction
 {
     // Request (if you add a field here, update __serialize() and __unserialize() as well).
-    /** @var SEPAAccount */
-    private $account;
-    /** @var string */
-    private $painMessage;
-    /** @var string */
-    private $xmlSchema;
+    private SEPAAccount $account;
+    private string $painMessage;
+    private string $xmlSchema;
     private bool $allowConversionToSEPATransfer = true;
 
     // There are no result fields. This action is simply marked as done to indicate that the transfer was executed.

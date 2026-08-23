@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Fhp\Action;
 
 use Fhp\BaseAction;
@@ -25,20 +27,13 @@ use Fhp\UnsupportedException;
 class SendSEPADirectDebit extends BaseAction
 {
     // Request (if you add a field here, update __serialize() and __unserialize() as well).
-    /** @var SEPAAccount */
-    protected $account;
-    /** @var string */
-    protected $painMessage;
-    /** @var string */
-    protected $painNamespace;
-    /** @var float */
-    protected $ctrlSum;
-    /** @var bool */
-    protected $singleDirectDebit = false;
-    /** @var bool */
-    protected $tryToUseControlSumForSingleTransactions = false;
-    /** @var string */
-    private $coreType;
+    protected SEPAAccount $account;
+    protected string $painMessage;
+    protected string $painNamespace;
+    protected ?float $ctrlSum = null;
+    protected bool $singleDirectDebit = false;
+    protected bool $tryToUseControlSumForSingleTransactions = false;
+    private ?string $coreType = null;
     private bool $singleBookingRequested = false;
 
     // There are no result fields. This action is simply marked as done to indicate that the transfer was executed.
@@ -56,7 +51,7 @@ class SendSEPADirectDebit extends BaseAction
         $ctrlSum = null;
 
         if (preg_match('@<GrpHdr>.*?<CtrlSum>(?<ctrlsum>[0-9.]+)</CtrlSum>.*?</GrpHdr>@s', $painMessage, $matches) === 1) {
-            $ctrlSum = $matches['ctrlsum'];
+            $ctrlSum = (float) $matches['ctrlsum'];
         }
 
         if (preg_match('@<PmtTpInf>.*?<LclInstrm>.*?<Cd>(?<coretype>CORE|COR1|B2B)</Cd>.*?</LclInstrm>.*?</PmtTpInf>@s', $painMessage, $matches) === 1) {

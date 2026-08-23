@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Fhp\Action;
 
 use Fhp\BaseAction;
@@ -15,12 +17,9 @@ use Fhp\Syntax\Bin;
 class SendInternationalCreditTransfer extends BaseAction
 {
     // Request (if you add a field here, update __serialize() and __unserialize() as well).
-    /** @var SEPAAccount */
-    protected $account;
-    /** @var string */
-    protected $dtavzData;
-    /** @var string|null */
-    protected $dtavzVersion;
+    protected SEPAAccount $account;
+    protected string $dtavzData;
+    protected ?string $dtavzVersion = null;
 
     /**
      * @param SEPAAccount $account The account of the creditor (the sender of the money)

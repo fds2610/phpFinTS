@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Fhp\Action;
 
 use Fhp\Model\SEPAAccount;
@@ -28,7 +30,7 @@ class GetSEPAAccounts extends PaginateableAction
 
     // Response
     /** @var SEPAAccount[] */
-    private $accounts;
+    private array $accounts = [];
 
     /**
      * @return GetSEPAAccounts A new action instance.

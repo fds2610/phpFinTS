@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Fhp\Action;
 
 use Fhp\BaseAction;
@@ -20,14 +22,10 @@ use Fhp\UnsupportedException;
 class SendSEPATransfer extends BaseAction
 {
     // Request (if you add a field here, update __serialize() and __unserialize() as well).
-    /** @var SEPAAccount */
-    private $account;
-    /** @var string */
-    private $painMessage;
-    /** @var string */
-    private $xmlSchema;
-    /** @var bool */
-    private $singleBookingRequested = false;
+    private SEPAAccount $account;
+    private string $painMessage;
+    private string $xmlSchema;
+    private bool $singleBookingRequested = false;
 
     // There are no result fields. This action is simply marked as done to indicate that the transfer was executed.
 
