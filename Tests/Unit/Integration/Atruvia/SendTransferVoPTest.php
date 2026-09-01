@@ -33,6 +33,11 @@ class SendTransferVoPTest extends AtruviaIntegrationTestBase
     public const VOP_REPORT_PARTIAL_MATCH_RESPONSE = "HIRMG:3:2+3060::Bitte beachten Sie die enthaltenen Warnungen/Hinweise.'HIRMS:4:2:3+3090::Ergebnis des Namensabgleichs prüfen.'HIVPP:5:1:3+@36@5e3b5c99-df27-4d42-835b-18b35d0c66ff+++urn?:iso?:std?:iso?:20022?:tech?:xsd?:pain.002.001.10+++Bei mindestens einem Zahlungsempfänger stimmt der Name mit dem für diese IBAN bei der Zahlungsempfängerbank hinterlegten Namen <b>nicht</b> oder nur <b>nahezu</b> überein.<br>Alternativ konnte der Name des Zahlungsempfängers nicht mit dem bei der Zahlungsempfängerbank hinterlegten Namen abgeglichen werden.<p>Eine nicht mögliche Empfängerüberprüfung kann auftreten, wenn ein technisches Problem vorliegt, die Empfängerbank diesen Service nicht anbietet oder eine Prüfung für das Empfängerkonto nicht möglich ist.<p><b>Wichtiger Hinweis?:</b> Die Überweisung wird ohne Korrektur ausgeführt.<p>Dies kann dazu führen, dass das Geld auf ein Konto überwiesen wird, dessen Inhaber nicht der von Ihnen angegebene Empfänger ist.<br>In diesem Fall haftet die Bank nicht für die Folgen der fehlenden Übereinstimmung, insbesondere besteht kein Anspruch auf Rückerstattung.<p>Eine Haftung der an der Ausführung der Überweisung beteiligten Zahlungsdienstleister ist ebenfalls ausgeschlossen.'";
     public const VOP_REPORT_PARTIAL_MATCH_XML_PAYLOAD = "<?xml version='1.0' encoding='UTF-8'?><Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:pain.002.001.10\"><CstmrPmtStsRpt><GrpHdr><MsgId>ATRUVIA-20251010-125258-X</MsgId><CreDtTm>2025-10-10T12:52:58.283+02:00</CreDtTm><DbtrAgt><FinInstnId><BICFI>ABCDEFGHIJK</BICFI></FinInstnId></DbtrAgt></GrpHdr><OrgnlGrpInfAndSts><OrgnlMsgId>M1234567890</OrgnlMsgId><OrgnlMsgNmId>pain.001.001.09</OrgnlMsgNmId><OrgnlNbOfTxs>1</OrgnlNbOfTxs><OrgnlCtrlSum>10.00</OrgnlCtrlSum><GrpSts>RVCM</GrpSts><StsRsnInf><AddtlInf>RCVC Der von Ihnen eingegebene Name des Zahlungsempfängers stimmt mit dem für diese IBAN</AddtlInf><AddtlInf>RCVC hinterlegten Namen bei der Zahlungsempfängerbank überein.</AddtlInf><AddtlInf>RVMC Der von Ihnen eingegebene Name des Zahlungsempfängers stimmt nahezu mit dem für diese IBAN</AddtlInf><AddtlInf>RVMC hinterlegten Namen bei der Zahlungsempfängerbank überein. Die Autorisierung der Zahlung</AddtlInf><AddtlInf>RVMC kann dazu führen, dass das Geld auf ein Konto überwiesen wird, dessen Inhaber nicht</AddtlInf><AddtlInf>RVMC der von Ihnen angegebene Empfänger ist. In diesem Fall haften die Zahlungsdienstleister nicht für</AddtlInf><AddtlInf>RVMC die Folgen der fehlenden Übereinstimmung, insbesondere besteht kein Anspruch auf Rückerstattung.</AddtlInf><AddtlInf>RVNM Der von Ihnen eingegebene Name des Zahlungsempfängers stimmt nicht mit dem für diese IBAN hinter-</AddtlInf><AddtlInf>RVNM legten Namen bei der Zahlungsempfängerbank überein. Bitte prüfen Sie den Empfängernamen. Die Autori-</AddtlInf><AddtlInf>RVNM sierung der Zahlung kann dazu führen, dass das Geld auf ein Konto überwiesen wird, dessen Inhaber</AddtlInf><AddtlInf>RVNM nicht der von Ihnen angegebene Empfänger ist. In diesem Fall haften die Zahlungsdienstleister nicht</AddtlInf><AddtlInf>RVNM für die Folgen der fehlenden Übereinstimmung, insbesondere besteht kein Anspruch auf Rückerstattung.</AddtlInf><AddtlInf>RVNA Der von Ihnen eingegebene Name des Zahlungsempfängers konnte nicht mit dem für diese IBAN hinter-</AddtlInf><AddtlInf>RVNA legten Namen bei der Zahlungsempfängerbank abgeglichen werden (z.B. technischer Fehler). Die Autori-</AddtlInf><AddtlInf>RVNA sierung der Zahlung kann dazu führen, dass das Geld auf ein Konto überwiesen wird, dessen Inhaber</AddtlInf><AddtlInf>RVNA nicht der von Ihnen angegebene Empfänger ist. In diesem Fall haften die Zahlungsdienstleister nicht</AddtlInf><AddtlInf>RVNA für die Folgen der fehlenden Übereinstimmung, insbesondere besteht kein Anspruch auf Rückerstattung.</AddtlInf></StsRsnInf><NbOfTxsPerSts><DtldNbOfTxs>0</DtldNbOfTxs><DtldSts>RCVC</DtldSts></NbOfTxsPerSts><NbOfTxsPerSts><DtldNbOfTxs>0</DtldNbOfTxs><DtldSts>RVMC</DtldSts></NbOfTxsPerSts><NbOfTxsPerSts><DtldNbOfTxs>1</DtldNbOfTxs><DtldSts>RVNM</DtldSts></NbOfTxsPerSts><NbOfTxsPerSts><DtldNbOfTxs>0</DtldNbOfTxs><DtldSts>RVNA</DtldSts></NbOfTxsPerSts></OrgnlGrpInfAndSts><OrgnlPmtInfAndSts><OrgnlPmtInfId>1760093576</OrgnlPmtInfId><OrgnlNbOfTxs>1</OrgnlNbOfTxs><NbOfTxsPerSts><DtldNbOfTxs>0</DtldNbOfTxs><DtldSts>RCVC</DtldSts></NbOfTxsPerSts><NbOfTxsPerSts><DtldNbOfTxs>0</DtldNbOfTxs><DtldSts>RVMC</DtldSts></NbOfTxsPerSts><NbOfTxsPerSts><DtldNbOfTxs>1</DtldNbOfTxs><DtldSts>RVNM</DtldSts></NbOfTxsPerSts><NbOfTxsPerSts><DtldNbOfTxs>0</DtldNbOfTxs><DtldSts>RVNA</DtldSts></NbOfTxsPerSts><TxInfAndSts><OrgnlEndToEndId>NOTPROVIDED</OrgnlEndToEndId><TxSts>RVNM</TxSts><OrgnlTxRef><Cdtr><Pty><Nm>Testempfänger</Nm></Pty></Cdtr><CdtrAcct><Id><IBAN>DE00ABCDEFGH1234567890</IBAN></Id></CdtrAcct></OrgnlTxRef></TxInfAndSts></OrgnlPmtInfAndSts></CstmrPmtStsRpt></Document>";
 
+    // Instead of a pain.002 message, banks may report the result of a single transfer in the HIVPP segment itself
+    // (DEG "Ergebnis VOP-Prüfung Einzeltransaktion"). These two were recorded with comdirect, anonymized.
+    public const VOP_SINGLE_RESULT_CLOSE_MATCH_RESPONSE = "HIRMG:3:2+3060::Bitte beachten Sie die enthaltenen Warnungen/Hinweise.'HIRMS:4:2:3+3090::Ergebnis des Namensabgleichs prüfen.'HIVPP:5:1:3+@36@5e3b5c99-df27-4d42-835b-18b35d0c66ff+++++DE00ABCDEFGH1234567890::Testempfaenger GmbH::RVMC+Der Name weicht ab. Sie können die Zahlung trotzdem freigeben.'";
+    public const VOP_SINGLE_RESULT_NO_MATCH_RESPONSE = "HIRMG:3:2+3060::Bitte beachten Sie die enthaltenen Warnungen/Hinweise.'HIRMS:4:2:3+3090::Ergebnis des Namensabgleichs prüfen.'HIVPP:5:1:3+@36@5e3b5c99-df27-4d42-835b-18b35d0c66ff+++++DE00ABCDEFGH1234567890::::RVNM+Der Name stimmt nicht überein.'";
+
     public const CONFIRM_VOP_REQUEST = (
         'HKCCS:3:1+DE00ABCDEFGH1234567890:ABCDEFGHIJK:1234567890::280:11223344+urn?:iso?:std?:iso?:20022?:tech?:xsd?:pain.001.001.09+@1161@'
         . self::XML_PAYLOAD
@@ -225,6 +230,56 @@ class SendTransferVoPTest extends AtruviaIntegrationTestBase
         $this->assertTrue($action->isDone());
 
         $action->ensureDone();
+    }
+
+    /**
+     * The bank reports the result of the single transfer in the HIVPP segment instead of a pain.002 message, and
+     * offers the name it has on file as a decision aid, which only happens for a close match.
+     * @throws \Throwable
+     */
+    public function testVopWithSingleTransactionResultCloseMatch(): void
+    {
+        $this->initDialog();
+        $action = $this->createAction();
+
+        $this->expectMessage(static::SEND_TRANSFER_REQUEST, mb_convert_encoding(static::SEND_TRANSFER_RESPONSE_POLLING_NEEDED, 'ISO-8859-1', 'UTF-8'));
+        $this->fints->execute($action);
+        $this->assertTrue($action->needsPollingWait());
+
+        $this->expectMessage(static::POLL_VOP_REQUEST, mb_convert_encoding(static::VOP_SINGLE_RESULT_CLOSE_MATCH_RESPONSE, 'ISO-8859-1', 'UTF-8'));
+        $this->fints->pollAction($action);
+
+        $this->assertTrue($action->needsVopConfirmation());
+        $this->assertEquals(
+            VopVerificationResult::CompletedCloseMatch,
+            $action->getVopConfirmationRequest()->getVerificationResult()
+        );
+        $this->assertEquals('Testempfaenger GmbH', $action->getVopConfirmationRequest()->getDifferingPayeeName());
+    }
+
+    /**
+     * For anything but a close match, the specification does not allow the bank to disclose the name it has on file,
+     * so there is nothing to show to the user.
+     * @throws \Throwable
+     */
+    public function testVopWithSingleTransactionResultNoMatch(): void
+    {
+        $this->initDialog();
+        $action = $this->createAction();
+
+        $this->expectMessage(static::SEND_TRANSFER_REQUEST, mb_convert_encoding(static::SEND_TRANSFER_RESPONSE_POLLING_NEEDED, 'ISO-8859-1', 'UTF-8'));
+        $this->fints->execute($action);
+        $this->assertTrue($action->needsPollingWait());
+
+        $this->expectMessage(static::POLL_VOP_REQUEST, mb_convert_encoding(static::VOP_SINGLE_RESULT_NO_MATCH_RESPONSE, 'ISO-8859-1', 'UTF-8'));
+        $this->fints->pollAction($action);
+
+        $this->assertTrue($action->needsVopConfirmation());
+        $this->assertEquals(
+            VopVerificationResult::CompletedNoMatch,
+            $action->getVopConfirmationRequest()->getVerificationResult()
+        );
+        $this->assertNull($action->getVopConfirmationRequest()->getDifferingPayeeName());
     }
 
     protected function createAction(): SendSEPATransfer
