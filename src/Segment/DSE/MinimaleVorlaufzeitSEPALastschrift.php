@@ -24,11 +24,11 @@ class MinimaleVorlaufzeitSEPALastschrift
         ['FRST', 'OOFF'],
     ];
 
-    /** Must be 0,1,2 */
-    public int $unterstuetzteSEPALastschriftartenCodiert;
+    /** Must be 0,1,2, or null when the segment does not state it (version 1, and B2B in general) */
+    public ?int $unterstuetzteSEPALastschriftartenCodiert = null;
 
-    /** Must be 0,1,2 */
-    public int $sequenceTypeCodiert;
+    /** Must be 0,1,2, or null when the segment does not state it (version 1) */
+    public ?int $sequenceTypeCodiert = null;
 
     /** In Days */
     public int $minimaleSEPAVorlaufzeit;
