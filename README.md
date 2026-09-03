@@ -7,6 +7,7 @@ A PHP library implementing the following functions of the FinTS/HBCI protocol:
  * Get accounts
  * Get balance
  * Get transactions
+ * Get credit card transactions (see [below](#credit-card-transactions))
  * Execute direct debit
  * Execute transfer
  * Note that any other functions mentioned in
@@ -42,6 +43,48 @@ Fill out the required configuration in `init.php` (server details can be obtaine
 [https://www.fints.org](https://www.fints.org/de/startseite) after registration).
 Then execute `tanModesAndMedia.php` and later `login.php`.
 Once you are able to login without any issues, you can move on to the other examples.
+
+## Credit card transactions
+
+Credit card accounts have no IBAN. They are therefore not returned by `GetSEPAAccounts` (HKSPA) and
+their transactions cannot be retrieved with `GetStatementOfAccount` (HKKAZ) or
+`GetStatementOfAccountXML` (HKCAZ). Instead they use `DKKKU`, a business transaction defined by the
+Deutsche Kreditwirtschaft rather than by the FinTS specification, which not every bank offers.
+
+The accounts are found in the UPD, which the bank sends during login, so listing them costs no
+request:
+
+```php
+$getCards = \Fhp\Action\GetCreditCardAccounts::create();
+$fints->execute($getCards);
+$cards = $getCards->getAccounts();
+
+$getTransactions = \Fhp\Action\GetCreditCardStatement::create($cards[0], $from, $to);
+$fints->execute($getTransactions);
+if ($getTransactions->needsTan()) {
+    handleStrongAuthentication($getTransactions);
+}
+foreach ($getTransactions->getStatement()->getTransactions() as $transaction) {
+    echo $transaction->getBookingDate()->format('Y-m-d') . ' '
+        . $transaction->getAmount() . ' ' . $transaction->getCurrency() . ' '
+        . $transaction->getPurpose() . PHP_EOL;
+}
+```
+
+See [Samples/creditCardStatement.php](/Samples/creditCardStatement.php) for a complete example. Note
+that:
+
+ * A single account can cover several physical cards, possibly of different schemes. The account
+   number looks like a card number but generally is not a valid one. Which card a transaction belongs
+   to is usually indicated in its purpose.
+ * A single request may not span more than the period the bank reports as "Speicherzeitraum" in the
+   `DIKKUS` parameters, and `GetCreditCardStatement` rejects wider ranges. Banks do not refuse them
+   themselves, they just answer inconsistently — the tested one served a range twice that period in
+   full on one attempt and returned an empty page on the next, and silently truncated a much wider
+   one. Note that the period is not necessarily how far back the data goes: the tested bank happily
+   served much older transactions when asked for them in windows of the permitted width.
+ * Transactions in a foreign currency additionally report the original amount, its currency and the
+   exchange rate that was applied.
 
 ## Banks with special needs
 
