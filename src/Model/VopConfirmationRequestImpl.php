@@ -12,6 +12,7 @@ class VopConfirmationRequestImpl implements VopConfirmationRequest
     private ?string $informationForUser;
     private ?string $verificationResult;
     private ?string $verificationNotApplicableReason;
+    private ?string $differingPayeeName;
 
     public function __construct(
         Bin $vopId,
@@ -19,12 +20,14 @@ class VopConfirmationRequestImpl implements VopConfirmationRequest
         ?string $informationForUser,
         ?string $verificationResult,
         ?string $verificationNotApplicableReason,
+        ?string $differingPayeeName = null,
     ) {
         $this->vopId = $vopId;
         $this->expiration = $expiration;
         $this->informationForUser = $informationForUser;
         $this->verificationResult = $verificationResult;
         $this->verificationNotApplicableReason = $verificationNotApplicableReason;
+        $this->differingPayeeName = $differingPayeeName;
     }
 
     public function getVopId(): Bin
@@ -50,5 +53,10 @@ class VopConfirmationRequestImpl implements VopConfirmationRequest
     public function getVerificationNotApplicableReason(): ?string
     {
         return $this->verificationNotApplicableReason;
+    }
+
+    public function getDifferingPayeeName(): ?string
+    {
+        return $this->differingPayeeName;
     }
 }

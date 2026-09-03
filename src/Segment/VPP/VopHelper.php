@@ -105,6 +105,7 @@ class VopHelper
         }
 
         $verificationNotApplicableReason = null;
+        $differingPayeeName = null;
         if ($hivpp->paymentStatusReport === null) {
             if ($hivpp->ergebnisVopPruefungEinzeltransaktion === null) {
                 throw new UnsupportedException('Missing paymentStatusReport and ergebnisVopPruefungEinzeltransaktion');
@@ -113,6 +114,8 @@ class VopHelper
                 $hivpp->ergebnisVopPruefungEinzeltransaktion->vopPruefergebnis
             );
             $verificationNotApplicableReason = $hivpp->ergebnisVopPruefungEinzeltransaktion->grundRVNA;
+            // Banks only fill this in for a close match, where they offer it as a decision aid for the user.
+            $differingPayeeName = $hivpp->ergebnisVopPruefungEinzeltransaktion->abweichenderEmpfaengername;
         } else {
             $report = simplexml_load_string($hivpp->paymentStatusReport->getData());
             $verificationResult = VopVerificationResult::parse(
@@ -135,6 +138,7 @@ class VopHelper
             $hivpp->aufklaerungstextAutorisierungTrotzAbweichung,
             $verificationResult,
             $verificationNotApplicableReason,
+            $differingPayeeName,
         );
     }
 

@@ -22,4 +22,13 @@ interface VopConfirmationRequest
      * return an additional explanation (in the user's language or in English), but it may also return null.
      */
     public function getVerificationNotApplicableReason(): ?string;
+
+    /**
+     * The payee name that the payee's bank has on file, which the bank offers as a decision aid when the name we asked
+     * for is a close match ({@link VopVerificationResult::CompletedCloseMatch}).
+     *
+     * The specification only allows banks to disclose it in that case, so this returns null for all other results, and
+     * it may be null even for a close match if the bank sends the result as a pain.002 message.
+     */
+    public function getDifferingPayeeName(): ?string;
 }
