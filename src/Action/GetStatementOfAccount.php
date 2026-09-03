@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Fhp\Action;
 
 use Fhp\CAMT\CAMT;
@@ -34,45 +36,35 @@ use Fhp\UnsupportedException;
 class GetStatementOfAccount extends PaginateableAction
 {
     // Request (if you add a field here, update __serialize() and __unserialize() as well).
-    /** @var SEPAAccount */
-    private $account;
-    /** @var \DateTime */
-    private $from;
-    /** @var \DateTime */
-    private $to;
-    /** @var bool */
-    private $allAccounts;
-    /** @var bool */
-    private $includeUnbooked;
+    private SEPAAccount $account;
+    private ?\DateTimeInterface $from = null;
+    private ?\DateTimeInterface $to = null;
+    private bool $allAccounts;
+    private bool $includeUnbooked;
 
     // Information from the BPD needed to interpret the response.
-    /** @var string */
-    private $bankName;
+    private ?string $bankName = null;
 
     // Internal action for XML fallback
-    /** @var GetStatementOfAccountXML|null */
-    private $xmlAction;
+    private ?GetStatementOfAccountXML $xmlAction = null;
 
     // Response
-    /** @var string */
-    private $rawMT940 = '';
+    private string $rawMT940 = '';
 
-    /** @var array */
-    protected $parsedMT940 = [];
+    protected array $parsedMT940 = [];
 
-    /** @var StatementOfAccount */
-    private $statement;
+    private ?StatementOfAccount $statement = null;
 
     /**
      * @param SEPAAccount $account The account to get the statement for. This can be constructed based on information
      *     that the user entered, or it can be {@link SEPAAccount} instance retrieved from {@link getAccounts()}.
-     * @param \DateTime|null $from If set, only transactions after this date (inclusive) are returned.
-     * @param \DateTime|null $to If set, only transactions before this date (inclusive) are returned.
+     * @param \DateTimeInterface|null $from If set, only transactions after this date (inclusive) are returned.
+     * @param \DateTimeInterface|null $to If set, only transactions before this date (inclusive) are returned.
      * @param bool $allAccounts If set to true, will return statements for all accounts of the user. You still need to
      *     pass one of the accounts into $account, though.
      * @return GetStatementOfAccount A new action instance.
      */
-    public static function create(SEPAAccount $account, ?\DateTime $from = null, ?\DateTime $to = null, bool $allAccounts = false, bool $includeUnbooked = false): GetStatementOfAccount
+    public static function create(SEPAAccount $account, ?\DateTimeInterface $from = null, ?\DateTimeInterface $to = null, bool $allAccounts = false, bool $includeUnbooked = false): GetStatementOfAccount
     {
         if ($from !== null && $to !== null && $from > $to) {
             throw new \InvalidArgumentException('From-date must be before to-date');

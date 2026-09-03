@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Fhp\Action;
 
 use Fhp\BaseAction;
@@ -17,12 +19,9 @@ class GetSEPADirectDebitParameters extends BaseAction
     public const DIRECT_DEBIT_TYPES = ['CORE', 'COR1', 'B2B'];
 
     // Request (if you add a field here, update __serialize() and __unserialize() as well).
-    /** @var string */
-    private $directDebitType;
-    /** @var string */
-    private $seqType;
-    /** @var bool */
-    private $singleDirectDebit;
+    private string $directDebitType;
+    private string $seqType;
+    private bool $singleDirectDebit;
 
     /** @var HIDXES */
     private $hidxes;

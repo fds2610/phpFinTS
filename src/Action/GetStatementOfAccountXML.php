@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /** @noinspection PhpUnused */
 
 namespace Fhp\Action;
@@ -26,26 +28,21 @@ use Fhp\UnsupportedException;
 class GetStatementOfAccountXML extends PaginateableAction
 {
     // Request (if you add a field here, update __serialize() and __unserialize() as well).
-    /** @var SEPAAccount */
-    private $account;
-    /** @var \DateTime */
-    private $from;
-    /** @var \DateTime */
-    private $to;
-    /** @var string */
-    private $camtURN;
-    /** @var bool */
-    private $allAccounts;
+    private SEPAAccount $account;
+    private ?\DateTimeInterface $from = null;
+    private ?\DateTimeInterface $to = null;
+    private ?string $camtURN = null;
+    private bool $allAccounts;
 
     // Response
     /** @var string[] */
-    protected $xml = [];
+    protected array $xml = [];
 
     /**
      * @param SEPAAccount $account The account to get the statement for. This can be constructed based on information
      *     that the user entered, or it can be {@link SEPAAccount} instance retrieved from {@link getAccounts()}.
-     * @param \DateTime|null $from If set, only transactions after this date (inclusive) are returned.
-     * @param \DateTime|null $to If set, only transactions before this date (inclusive) are returned.
+     * @param \DateTimeInterface|null $from If set, only transactions after this date (inclusive) are returned.
+     * @param \DateTimeInterface|null $to If set, only transactions before this date (inclusive) are returned.
      * @param string|null $camtURN The URN/descriptor of the CAMT XML format you want the bank to return.
      *     Use null to just let the bank decide. Otherwise needs to be one of the reported URNs the bank supports.
      *     For example urn:iso:std:iso:20022:tech:xsd:camt.052.001.02
@@ -53,7 +50,7 @@ class GetStatementOfAccountXML extends PaginateableAction
      *     pass one of the accounts into $account, though.
      * @return GetStatementOfAccountXML A new action instance.
      */
-    public static function create(SEPAAccount $account, ?\DateTime $from = null, ?\DateTime $to = null, ?string $camtURN = null, bool $allAccounts = false): GetStatementOfAccountXML
+    public static function create(SEPAAccount $account, ?\DateTimeInterface $from = null, ?\DateTimeInterface $to = null, ?string $camtURN = null, bool $allAccounts = false): GetStatementOfAccountXML
     {
         if ($from !== null && $to !== null && $from > $to) {
             throw new \InvalidArgumentException('From-date must be before to-date');
